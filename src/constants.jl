@@ -1,5 +1,3 @@
-# FIXME: implement the constants
-
 """
 	ELECTRON_MASS
 
