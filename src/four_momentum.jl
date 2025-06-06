@@ -21,19 +21,18 @@ julia> FourMomentum(4, 1.0, 2, 3) # implicit type promotion
 FourMomentum(en = 4.0, x = 1.0, y = 2.0, z = 3.0)
 ```
 """
-struct FourMomentum{T<:Real}
-    #
-    # FIXME: fill me in
-    #
+struct FourMomentum{T<:Real} 
+    en::T  # Energy component
+    x::T   # Spatial component in the x-direction
+    y::T   # Spatial component in the y-direction
+    z::T   # Spatial component in the z-direction
 end
 # type promotion on construction
 FourMomentum(en,x,y,z) = FourMomentum(promote(en,x,y,z)...)
 
 # return the element type
 function Base.eltype(::FourMomentum{T}) where T 
-    #
-    # FIXME:
-    #
+    return T
 end
 
 # Overload Base.show for pretty printing of FourMomentum; plain text version
@@ -72,7 +71,8 @@ FourMomentum(en = 6.0, x = 1.5, y = 3.0, z = 4.5)
 """
 function Base.:+(p1::FourMomentum, p2::FourMomentum) 
 
-    # FIXME: fill me in
+    #element-wise addition of the four-momentum components
+    return FourMomentum(p1.en + p2.en, p1.x + p2.x, p1.y + p2.y, p1.z + p2.z)
 
 end
 
@@ -98,7 +98,8 @@ FourMomentum(en = 2.0, x = 0.5, y = 1.0, z = 1.5)
 ```
 """ 
 function Base.:-(p1::FourMomentum, p2::FourMomentum) 
-    # FIXME: fill me in
+    # element-wise subtraction of the four-momentum components
+    return FourMomentum(p1.en - p2.en, p1.x - p2.x, p1.y - p2.y, p1.z - p2.z)
 end
 
 
@@ -120,7 +121,8 @@ FourMomentum(en = 8.0, x = 2.0, y = 4.0, z = 6.0)
 ```
 """
 function Base.:*(a::Real, p::FourMomentum) 
-    # FIXME: fill me in
+    # scalar multiplication of the four-momentum components
+    return FourMomentum(a * p.en, a * p.x, a * p.y, a * p.z)
 end
 
 
@@ -149,17 +151,35 @@ julia> minkowski_dot(p1, p2)
 """
 function minkowski_dot(p1::FourMomentum, p2::FourMomentum)
     # Minkowski metric: (+,-,-,-)
-    # FIXME: fill me in
+    return p1.en * p2.en - p1.x * p2.x - p1.y * p2.y - p1.z * p2.z
 end
 
 function _construct_moms_from_coords(E_in, cos_theta, phi)
-    #
-    # FIXME: fill me in
-    #
+    # Calculate the energy and momentum components for the electron-positron pair
+    E = E_in / 2  # Each particle has half the total energy in the center-of-mass frame
+    p = sqrt(E^2 - ELECTRON_MASS)  # Assuming electron mass is 0.511 MeV/c^2
+
+    # Calculate the spatial components based on the scattering angle and azimuthal angle
+    px = p * sqrt(1 - cos_theta^2) * cos(phi)
+    py = p * sqrt(1 - cos_theta^2) * sin(phi)
+    pz = p * cos_theta
+
+    # Construct four-momenta for e-, e+, mu-, mu+
+    e_minus = FourMomentum(E, px, py, pz)
+    e_plus = FourMomentum(E, -px, -py, -pz)
+    mu_minus = FourMomentum(E, px, py, pz)
+    mu_plus = FourMomentum(E, -px, -py, -pz)
+
+    return Dict("e-" => e_minus, "e+" => e_plus, "mu-" => mu_minus, "mu+" => mu_plus)
 end
 
 # TODO: 
 # consider using NamedTuples instead
+
+
+
+
+
 """
     coords_to_dict(E_in::Real, cos_theta::Real, phi::Real)
 
@@ -197,7 +217,38 @@ FourMomentum(en = 1000.0, x = -306.4954310103767, y = -306.49543101037665, z = -
 ```
 """
 function coords_to_dict(E_in,cos_theta,phi)
-    #
-    # FIXME: fill me in
-    #
+
+    # Validate input types
+    if !(isa(E_in, Real) && isa(cos_theta, Real) && isa(phi, Real))
+        throw(ArgumentError("All inputs must be of type Real."))
+    end
+
+    # Validate ranges
+    if cos_theta < -1 || cos_theta > 1
+        throw(ArgumentError("cos_theta must be in the range [-1, 1]."))
+    end
+    if phi < 0 || phi >= 2 * pi
+        throw(ArgumentError("phi must be in the range [0, 2π)."))
+    end
+
+    return _construct_moms_from_coords(E_in, cos_theta, phi)
+
+
+    
 end
+
+function extractThreeMomentum(p::FourMomentum)
+    
+    return (p.x, p.y, p.z)
+end
+
+function extractEnergy(p::FourMomentum)
+    
+    return p.en
+end
+
+function extractNegativeThreeMomentum(p::FourMomentum)
+    
+    return (-p.x, -p.y, -p.z)
+end
+
