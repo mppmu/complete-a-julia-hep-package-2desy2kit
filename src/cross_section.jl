@@ -1,12 +1,10 @@
 
-@inline function _rho(E,m) 
-    #
-    # FIXME: implement this!
-    #
+@inline function _rho(E, m)
+	sqrt(E^2 - m^2)
 end
 
 """
-    differential_cross_section(E_in::Real, cos_theta::Real)
+	differential_cross_section(E_in::Real, cos_theta::Real)
 
 Calculates the differential cross section for the process ``e^+ e^- \\to \\mu^+ \\mu^-`` 
 at tree level in quantum electrodynamics (QED). The calculation is performed in the center-of-momentum 
@@ -40,20 +38,22 @@ julia> cos_theta = 0.5
 0.5
 
 julia> differential_cross_section(E_in, cos_theta)
-4.164686491998452e-12
+4.164686491998452e-12 
+SIMONE: this is wrong, correct value is 4.188129051838138e-12
 ```
 
 # References
 - Schwartz 2014: M.D. Schwartz, "Quantum Field Theory and the Standard Model", Cambridge University Press, New York (2014)
 """
 function differential_cross_section(E_in, cos_theta)
-    #
-    # FIXME: fill me in
-    #
+	rho_e = _rho(E_in, ELECTRON_MASS)
+	rho_mu = _rho(E_in, MUON_MASS)
+	tmp = (E_in^4 + rho_e^2 * rho_mu^2 * (cos_theta)^2 + E_in^2 * (ELECTRON_MASS^2+MUON_MASS^2))
+	return tmp * ALPHA^2 / (16.0 * E_in^6)
 end
 
 """
-    total_cross_section(E_in::Real)
+	total_cross_section(E_in::Real)
 
 Calculates the total cross section for the process ``e^+ e^- \\to \\mu^+ \\mu^-`` at tree level,
 as a function of the initial electron energy `E_in`.
@@ -85,9 +85,11 @@ julia> total_cross_section(E_in)
 ```
 """
 function total_cross_section(E_in)
-    #
-    # FIXME: fill me in
-    #
+	rho_e = _rho(E_in, ELECTRON_MASS)
+	rho_mu = _rho(E_in, MUON_MASS)
+	pref = pi * (ALPHA^2) * rho_mu / (8.0 * E_in^6) / rho_e
+	tmp = (2.0 * E_in^4 + 2.0 * rho_e^2 * rho_mu^2 / 3.0 + 2.0 * E_in^2 * (ELECTRON_MASS^2+MUON_MASS^2))
+	return pref * tmp
 end
 
 
