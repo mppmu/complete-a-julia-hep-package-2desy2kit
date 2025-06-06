@@ -236,3 +236,19 @@ function coords_to_dict(E_in,cos_theta,phi)
 
     
 end
+
+function extractThreeMomentum(p::FourMomentum)
+    
+    return (p.x, p.y, p.z)
+end
+
+function extractEnergy(p::FourMomentum)
+    
+    return p.en
+end
+
+function extractNegativeThreeMomentum(p::FourMomentum)
+    
+    return (-p.x, -p.y, -p.z)
+end
+
